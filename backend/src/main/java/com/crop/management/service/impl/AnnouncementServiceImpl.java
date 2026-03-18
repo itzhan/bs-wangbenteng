@@ -4,18 +4,27 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.crop.management.common.PageResult;
 import com.crop.management.entity.Announcement;
+import com.crop.management.entity.User;
 import com.crop.management.exception.BusinessException;
 import com.crop.management.mapper.AnnouncementMapper;
+import com.crop.management.mapper.UserMapper;
 import com.crop.management.service.AnnouncementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AnnouncementServiceImpl implements AnnouncementService {
 
     private final AnnouncementMapper announcementMapper;
+    private final UserMapper userMapper;
 
     @Override
     public PageResult<Announcement> list(Integer page, Integer size, String keyword, Integer status) {
@@ -25,6 +34,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         wrapper.eq(status != null, Announcement::getStatus, status);
         wrapper.orderByDesc(Announcement::getCreateTime);
         Page<Announcement> result = announcementMapper.selectPage(pageParam, wrapper);
+        fillDisplayFields(result.getRecords());
         return PageResult.of(result.getRecords(), result.getTotal(), page, size);
     }
 
@@ -48,6 +58,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement existing = announcementMapper.selectById(id);
         if (existing == null) {
             throw new BusinessException("公告不存在");
+        }
+        if (announcement.getPublisherId() == null) {
+            announcement.setPublisherId(existing.getPublisherId());
+        }
+        if (announcement.getStatus() == null) {
+            announcement.setStatus(existing.getStatus());
         }
         announcement.setId(id);
         announcementMapper.updateById(announcement);
@@ -89,6 +105,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         wrapper.eq(Announcement::getStatus, 1);
         wrapper.orderByDesc(Announcement::getCreateTime);
         Page<Announcement> result = announcementMapper.selectPage(pageParam, wrapper);
+        fillDisplayFields(result.getRecords());
         return PageResult.of(result.getRecords(), result.getTotal(), page, size);
+    }
+
+    private void fillDisplayFields(List<Announcement> announcements) {
+        if (announcements == null || announcements.isEmpty()) {
+            return;
+        }
+
+        Map<Long, String> userNameMap = userMapper.selectBatchIds(extractIds(announcements.stream().map(Announcement::getPublisherId).toList()))
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user.getRealName() != null ? user.getRealName() : user.getUsername()));
+        announcements.forEach(announcement -> announcement.setAuthorName(userNameMap.get(announcement.getPublisherId())));
+    }
+
+    private Set<Long> extractIds(List<Long> ids) {
+        return ids.stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 }

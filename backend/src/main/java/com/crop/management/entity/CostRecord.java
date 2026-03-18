@@ -22,4 +22,10 @@ public class CostRecord {
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+    @TableField(exist = false)
+    private String planName;
+    @TableField(exist = false)
+    private String costType;
+    @TableField(exist = false)
+    private String remark;
 }

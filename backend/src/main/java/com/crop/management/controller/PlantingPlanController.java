@@ -51,6 +51,9 @@ public class PlantingPlanController {
      */
     @PostMapping
     public Result<Void> create(@RequestBody PlantingPlan plantingPlan) {
+        if (plantingPlan.getUserId() == null) {
+            plantingPlan.setUserId(getCurrentUser().getUserId());
+        }
         plantingPlanService.create(plantingPlan);
         return Result.success();
     }

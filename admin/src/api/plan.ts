@@ -26,7 +26,7 @@ export function deletePlan(id: number) {
 }
 
 /** 审核种植计划 */
-export function reviewPlan(id: number, data: { approved: boolean; remark?: string }) {
+export function reviewPlan(id: number, data: { status: number; reviewNote?: string }) {
   return request.request({ url: `/plans/${id}/review`, method: 'put', data });
 }
 

@@ -16,8 +16,7 @@ import {
   NPagination,
   NIcon,
 } from 'naive-ui'
-import { SearchOutline } from '@vicons/ionicons5'
-import { Wheat } from 'lucide-vue-next'
+import { SearchOutline, LeafOutline } from '@vicons/ionicons5'
 import { getCrops, getCropById } from '@/api/crop'
 
 const crops = ref<any[]>([])
@@ -31,36 +30,37 @@ const showDetail = ref(false)
 const currentCrop = ref<any>(null)
 const detailLoading = ref(false)
 
-const fallbackCropImage =
-  'https://images.unsplash.com/photo-1429087969512-1e85aab2683d?ixid=M3w3MjUzNDh8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkfGVufDB8fHx8MTc2MTg0MzM0MXww&ixlib=rb-4.1.0&fit=fillmax&h=320&w=320'
+const fallbackCropImage = 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=640&h=480&fit=crop'
 
-const cropImageMap: Array<{ keywords: string[]; image: string }> = [
-  {
-    keywords: ['水稻', '稻', 'rice'],
-    image:
-      'https://images.unsplash.com/photo-1574691250077-03a929faece5?ixid=M3w3MjUzNDh8MHwxfHNlYXJjaHwxfHxyaWNlJTIwZmllbGR8ZW58MHx8fHwxNzYxODQzMzEyfDA&ixlib=rb-4.1.0&fit=fillmax&h=320&w=320',
-  },
-  {
-    keywords: ['小麦', '麦', 'wheat'],
-    image:
-      'https://images.unsplash.com/photo-1429087969512-1e85aab2683d?ixid=M3w3MjUzNDh8MHwxfHNlYXJjaHwxfHx3aGVhdCUyMGZpZWxkfGVufDB8fHx8MTc2MTg0MzM0MXww&ixlib=rb-4.1.0&fit=fillmax&h=320&w=320',
-  },
-  {
-    keywords: ['玉米', 'corn', 'maize'],
-    image:
-      'https://images.unsplash.com/photo-1663255743274-1f9f3f95ec03?ixid=M3w3MjUzNDh8MHwxfHNlYXJjaHwxfHxjb3JuJTIwZmllbGR8ZW58MHx8fHwxNzYxODQ0MzQxfDA&ixlib=rb-4.1.0&fit=fillmax&h=320&w=320',
-  },
-  {
-    keywords: ['蔬菜', '番茄', '温室', 'vegetable', 'tomato'],
-    image:
-      'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixid=M3w3MjUzNDh8MHwxfHNlYXJjaHwxfHxncmVlbmhvdXNlfGVufDB8fHx8MTc2MTg0MzM0OXww&ixlib=rb-4.1.0&fit=fillmax&h=320&w=320',
-  },
-]
+// All URLs verified accessible via HTTP HEAD on 2026-03-17
+const cropImageMap: Record<string, string> = {
+  '水稻': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=640&h=480&fit=crop',
+  '稻':   'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=640&h=480&fit=crop',
+  '小麦': 'https://images.unsplash.com/photo-1437252611977-07f74518abd7?w=640&h=480&fit=crop',
+  '麦':   'https://images.unsplash.com/photo-1437252611977-07f74518abd7?w=640&h=480&fit=crop',
+  '玉米': 'https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=640&h=480&fit=crop',
+  '大豆': 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=640&h=480&fit=crop',
+  '花生': 'https://images.unsplash.com/photo-1543158266-0066955047b1?w=640&h=480&fit=crop',
+  '棉花': 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=640&h=480&fit=crop',
+  '土豆': 'https://images.unsplash.com/photo-1508313880080-c4bef0730395?w=640&h=480&fit=crop',
+  '马铃薯': 'https://images.unsplash.com/photo-1508313880080-c4bef0730395?w=640&h=480&fit=crop',
+  '番茄': 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=640&h=480&fit=crop',
+  '西红柿': 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?w=640&h=480&fit=crop',
+  '黄瓜': 'https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=640&h=480&fit=crop',
+  '辣椒': 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?w=640&h=480&fit=crop',
+  '白菜': 'https://images.unsplash.com/photo-1598030343246-eec71cb44231?w=640&h=480&fit=crop',
+  '红薯': 'https://images.unsplash.com/photo-1590165482129-1b8b27698780?w=640&h=480&fit=crop',
+  '甘薯': 'https://images.unsplash.com/photo-1590165482129-1b8b27698780?w=640&h=480&fit=crop',
+  '油菜': 'https://images.unsplash.com/photo-1560717789-0ac7c58ac90a?w=640&h=480&fit=crop',
+}
 
 function getCropImage(crop: any) {
-  const text = `${crop?.name || ''} ${crop?.category || ''}`.toLowerCase()
-  const matched = cropImageMap.find((item) => item.keywords.some((keyword) => text.includes(keyword)))
-  return matched?.image || fallbackCropImage
+  // Always use frontend verified image map (DB images may be broken)
+  const name = crop?.name || ''
+  for (const [key, url] of Object.entries(cropImageMap)) {
+    if (name.includes(key)) return url
+  }
+  return fallbackCropImage
 }
 
 async function loadCrops() {
@@ -134,15 +134,15 @@ onMounted(() => {
                 <img class="crop-image" :src="getCropImage(crop)" :alt="`${crop.name}图片`" loading="lazy" />
                 <div class="crop-icon-badge" aria-hidden="true">
                   <n-icon :size="18">
-                    <Wheat />
+                    <LeafOutline />
                   </n-icon>
                 </div>
               </div>
               <h3 style="font-size: 16px; font-weight: 600; color: #333; margin: 0 0 6px">
                 {{ crop.name }}
               </h3>
-              <n-tag v-if="crop.category" size="small" type="success" round>
-                {{ crop.category }}
+              <n-tag v-if="crop.variety" size="small" type="success" round>
+                {{ crop.variety }}
               </n-tag>
               <p style="font-size: 13px; color: #888; margin: 8px 0 0; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical">
                 {{ crop.description || '暂无描述' }}
@@ -169,12 +169,11 @@ onMounted(() => {
         <template v-if="currentCrop">
           <n-descriptions :column="1" label-placement="left" bordered>
             <n-descriptions-item label="作物名称">{{ currentCrop.name }}</n-descriptions-item>
-            <n-descriptions-item label="分类">{{ currentCrop.category || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="品种">{{ currentCrop.variety || '-' }}</n-descriptions-item>
             <n-descriptions-item label="生长周期">{{ currentCrop.growthCycle ? `${currentCrop.growthCycle}天` : '-' }}</n-descriptions-item>
-            <n-descriptions-item label="适宜温度">{{ currentCrop.suitableTemp || '-' }}</n-descriptions-item>
-            <n-descriptions-item label="适宜湿度">{{ currentCrop.suitableHumidity || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="种植季节">{{ currentCrop.plantingSeason || '-' }}</n-descriptions-item>
+            <n-descriptions-item label="适宜地区">{{ currentCrop.suitableRegion || '-' }}</n-descriptions-item>
             <n-descriptions-item label="描述">{{ currentCrop.description || '-' }}</n-descriptions-item>
-            <n-descriptions-item label="种植建议">{{ currentCrop.plantingAdvice || '-' }}</n-descriptions-item>
           </n-descriptions>
         </template>
         <n-empty v-else-if="!detailLoading" description="加载失败" />

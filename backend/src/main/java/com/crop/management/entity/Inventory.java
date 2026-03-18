@@ -18,4 +18,10 @@ public class Inventory {
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+    @TableField(exist = false)
+    private String materialName;
+    @TableField(exist = false)
+    private String materialType;
+    @TableField(exist = false)
+    private String unit;
 }

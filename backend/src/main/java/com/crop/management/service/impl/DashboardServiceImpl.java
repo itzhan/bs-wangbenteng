@@ -18,11 +18,13 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final UserMapper userMapper;
     private final CropMapper cropMapper;
+    private final PlotMapper plotMapper;
     private final PlantingPlanMapper plantingPlanMapper;
     private final FieldOperationMapper fieldOperationMapper;
     private final YieldRecordMapper yieldRecordMapper;
     private final CostRecordMapper costRecordMapper;
     private final InventoryMapper inventoryMapper;
+    private final AgriculturalMaterialMapper agriculturalMaterialMapper;
 
     @Override
     public DashboardVO getDashboardData() {
@@ -31,8 +33,10 @@ public class DashboardServiceImpl implements DashboardService {
         // 基础统计
         vo.setUserCount(userMapper.selectCount(null));
         vo.setCropCount(cropMapper.selectCount(null));
+        vo.setPlotCount(plotMapper.selectCount(null));
         vo.setPlanCount(plantingPlanMapper.selectCount(null));
         vo.setOperationCount(fieldOperationMapper.selectCount(null));
+        vo.setMaterialCount(agriculturalMaterialMapper.selectCount(null));
 
         // 总产量
         List<YieldRecord> yieldRecords = yieldRecordMapper.selectList(null);

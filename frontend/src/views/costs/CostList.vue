@@ -38,32 +38,44 @@ const formData = ref<Record<string, any>>({
 let editId: number | null = null
 
 const planOptions = ref<any[]>([])
+const costTypeMap: Record<number, string> = {
+  1: '种子', 2: '化肥', 3: '农药', 4: '人工', 5: '设备', 6: '其他',
+}
 const costTypeOptions = [
-  { label: '种子', value: '种子' },
-  { label: '肥料', value: '肥料' },
-  { label: '农药', value: '农药' },
-  { label: '人工', value: '人工' },
-  { label: '机械', value: '机械' },
-  { label: '灌溉', value: '灌溉' },
-  { label: '其他', value: '其他' },
+  { label: '种子', value: 1 },
+  { label: '化肥', value: 2 },
+  { label: '农药', value: 3 },
+  { label: '人工', value: 4 },
+  { label: '设备', value: 5 },
+  { label: '其他', value: 6 },
 ]
 
 const typeColorMap: Record<string, string> = {
   '种子': 'success',
-  '肥料': 'warning',
+  '化肥': 'warning',
   '农药': 'error',
   '人工': 'info',
-  '机械': 'default',
-  '灌溉': 'info',
+  '设备': 'default',
+  '其他': 'default',
 }
 
+const planMap = ref<Record<number, string>>({})
+
 const columns: DataTableColumns<any> = [
-  { title: '所属计划', key: 'planName', ellipsis: { tooltip: true } },
+  {
+    title: '所属计划',
+    key: 'planId',
+    ellipsis: { tooltip: true },
+    render: (row) => planMap.value[row.planId] || `计划#${row.planId}`,
+  },
   {
     title: '费用类型',
-    key: 'costType',
+    key: 'type',
     width: 100,
-    render: (row) => h(NTag, { type: (typeColorMap[row.costType] || 'default') as any, size: 'small', round: true }, { default: () => row.costType }),
+    render: (row) => {
+      const label = costTypeMap[row.type] || String(row.type) || '-'
+      return h(NTag, { type: (typeColorMap[label] || 'default') as any, size: 'small', round: true }, { default: () => label })
+    },
   },
   {
     title: '金额(元)',
@@ -72,7 +84,7 @@ const columns: DataTableColumns<any> = [
     render: (row) => `¥${(row.amount || 0).toFixed(2)}`,
   },
   { title: '日期', key: 'costDate', width: 110 },
-  { title: '备注', key: 'remark', ellipsis: { tooltip: true } },
+  { title: '描述', key: 'description', ellipsis: { tooltip: true } },
   {
     title: '操作',
     key: 'actions',
@@ -103,12 +115,9 @@ async function loadData() {
 async function loadPlanOptions() {
   try {
     const res: any = await getMyPlans(1, 100)
-    // Backend /plans/my returns a plain array (not paginated)
     const list = Array.isArray(res) ? res : (res.records || [])
-    planOptions.value = list.map((p: any) => ({
-      label: p.planName,
-      value: p.id,
-    }))
+    planOptions.value = list.map((p: any) => ({ label: p.planName, value: p.id }))
+    planMap.value = Object.fromEntries(list.map((p: any) => [p.id, p.planName]))
   } catch {
     // ignore
   }
@@ -126,10 +135,10 @@ function handleEdit(row: any) {
   editId = row.id
   formData.value = {
     planId: row.planId,
-    costType: row.costType,
+    costType: row.type || row.costType || '',
     amount: row.amount,
     costDate: row.costDate ? new Date(row.costDate).getTime() : null,
-    remark: row.remark || '',
+    remark: row.description || row.remark || '',
   }
   showModal.value = true
 }
@@ -143,7 +152,10 @@ async function handleSubmit() {
   formLoading.value = true
   try {
     const payload = {
-      ...formData.value,
+      planId: formData.value.planId,
+      type: formData.value.costType,
+      amount: formData.value.amount,
+      description: formData.value.remark,
       costDate: formData.value.costDate ? new Date(formData.value.costDate).toISOString().split('T')[0] : null,
     }
     if (isEdit.value && editId) {

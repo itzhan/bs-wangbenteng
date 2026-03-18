@@ -66,6 +66,8 @@ export const useUserStore = defineStore('user', {
     async logout() {
       this.token = '';
       this.userInfo = { ...InitUserInfo };
+      const permissionStore = usePermissionStore();
+      permissionStore.restoreRoutes();
     },
   },
   persist: {

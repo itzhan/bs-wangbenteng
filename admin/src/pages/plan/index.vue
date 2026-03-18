@@ -84,8 +84,8 @@
         <t-form-item label="计划结束日期" name="plannedEndDate">
           <t-date-picker v-model="formData.plannedEndDate" placeholder="请选择日期" style="width: 100%" />
         </t-form-item>
-        <t-form-item label="备注" name="remark">
-          <t-textarea v-model="formData.remark" placeholder="请输入备注" :autosize="{ minRows: 3 }" />
+        <t-form-item label="备注" name="description">
+          <t-textarea v-model="formData.description" placeholder="请输入备注" :autosize="{ minRows: 3 }" />
         </t-form-item>
       </t-form>
     </t-dialog>
@@ -134,7 +134,7 @@ const formData = reactive({
   plannedArea: undefined as number | undefined,
   plannedStartDate: '',
   plannedEndDate: '',
-  remark: '',
+  description: '',
 });
 
 const formRules = {
@@ -206,7 +206,7 @@ function resetForm() {
   formData.plannedArea = undefined;
   formData.plannedStartDate = '';
   formData.plannedEndDate = '';
-  formData.remark = '';
+  formData.description = '';
 }
 
 function handleAdd() {
@@ -251,7 +251,7 @@ async function handleDelete(row: any) {
 
 async function handleReview(row: any, approved: boolean) {
   try {
-    await reviewPlan(row.id, { approved });
+    await reviewPlan(row.id, { status: approved ? 1 : 2 });
     MessagePlugin.success(approved ? '审核通过' : '已驳回');
     fetchData();
   } catch (e: any) {

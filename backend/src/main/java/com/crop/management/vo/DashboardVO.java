@@ -10,8 +10,10 @@ import java.util.Map;
 public class DashboardVO {
     private long userCount;
     private long cropCount;
+    private long plotCount;
     private long planCount;
     private long operationCount;
+    private long materialCount;
     private BigDecimal totalYield;
     private BigDecimal totalCost;
     private List<Map<String, Object>> planStatusDistribution;

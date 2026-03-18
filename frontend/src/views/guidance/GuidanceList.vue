@@ -26,6 +26,7 @@ const keyword = ref('')
 const cropId = ref<number | null>(null)
 
 const cropOptions = ref<any[]>([])
+const cropMap = ref<Record<number, string>>({})
 
 const showDetail = ref(false)
 const currentItem = ref<any>(null)
@@ -50,10 +51,12 @@ async function loadData() {
 async function loadCropOptions() {
   try {
     const res: any = await getCrops(1, 100)
+    const list = res.records || []
     cropOptions.value = [
       { label: '全部作物', value: null },
-      ...(res.records || []).map((c: any) => ({ label: c.name, value: c.id })),
+      ...list.map((c: any) => ({ label: c.name, value: c.id })),
     ]
+    cropMap.value = Object.fromEntries(list.map((c: any) => [c.id, c.name]))
   } catch {
     // ignore
   }
@@ -130,13 +133,13 @@ onMounted(() => {
               <h3 style="font-size: 16px; font-weight: 600; color: #333; margin: 0">
                 {{ item.title }}
               </h3>
-              <n-tag v-if="item.cropName" size="small" type="success" round>{{ item.cropName }}</n-tag>
+              <n-tag v-if="item.cropId" size="small" type="success" round>{{ cropMap[item.cropId] || '作物' }}</n-tag>
             </div>
             <p style="font-size: 13px; color: #888; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">
-              {{ item.summary || item.content?.slice(0, 100) || '' }}
+              {{ item.content?.slice(0, 100) || '' }}
             </p>
             <div style="margin-top: 8px; font-size: 12px; color: #aaa">
-              {{ item.author || '' }} &nbsp; {{ item.createTime || '' }}
+              {{ item.createTime || '' }}
             </div>
           </div>
         </n-card>
@@ -152,11 +155,10 @@ onMounted(() => {
         <template v-if="currentItem">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px">
             <h2 style="font-size: 20px; font-weight: 600; margin: 0">{{ currentItem.title }}</h2>
-            <n-tag v-if="currentItem.cropName" size="small" type="success" round>{{ currentItem.cropName }}</n-tag>
+            <n-tag v-if="currentItem.cropId" size="small" type="success" round>{{ cropMap[currentItem.cropId] || '作物' }}</n-tag>
           </div>
           <p style="font-size: 12px; color: #999; margin: 0 0 16px">
-            {{ currentItem.author ? `作者：${currentItem.author}` : '' }}
-            &nbsp; {{ currentItem.createTime || '' }}
+            {{ currentItem.createTime || '' }}
           </p>
           <div style="line-height: 1.8; color: #444; white-space: pre-wrap">{{ currentItem.content }}</div>
         </template>

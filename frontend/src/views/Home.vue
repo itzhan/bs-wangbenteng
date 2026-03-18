@@ -61,14 +61,24 @@ onMounted(async () => {
 <template>
   <div>
     <!-- Hero Section -->
-    <div style="text-align: center; padding: 60px 0 48px; background: linear-gradient(135deg, #e8f5e1 0%, #f0f7e6 100%); border-radius: 16px; margin-bottom: 48px">
-      <n-icon :size="64" color="#18a058" style="margin-bottom: 16px">
+    <div style="
+      text-align: center;
+      padding: 72px 24px 56px;
+      background: linear-gradient(135deg, rgba(24,100,50,0.82) 0%, rgba(34,120,60,0.72) 50%, rgba(20,80,40,0.65) 100%),
+                  url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400&h=600&fit=crop');
+      background-size: cover;
+      background-position: center;
+      border-radius: 16px;
+      margin-bottom: 48px;
+      position: relative;
+    ">
+      <n-icon :size="64" color="rgba(255,255,255,0.9)" style="margin-bottom: 16px">
         <LeafOutline />
       </n-icon>
-      <h1 style="font-size: 36px; font-weight: 700; color: #1a1a1a; margin: 0 0 12px">
+      <h1 style="font-size: 36px; font-weight: 700; color: #ffffff; margin: 0 0 12px; text-shadow: 0 2px 8px rgba(0,0,0,0.15)">
         农作物种植管理系统
       </h1>
-      <p style="font-size: 16px; color: #666; margin: 0 0 32px; max-width: 500px; margin-left: auto; margin-right: auto">
+      <p style="font-size: 16px; color: rgba(255,255,255,0.88); margin: 0 0 32px; max-width: 500px; margin-left: auto; margin-right: auto">
         科学管理种植过程，提高农作物产量与效益，助力现代农业发展
       </p>
       <n-space justify="center">
@@ -77,6 +87,7 @@ onMounted(async () => {
           type="primary"
           size="large"
           round
+          style="background: rgba(255,255,255,0.95); color: #18a058; border: none; font-weight: 600"
           @click="router.push('/register')"
         >
           立即注册
@@ -85,6 +96,8 @@ onMounted(async () => {
           v-if="!userStore.token"
           size="large"
           round
+          ghost
+          style="color: white; border-color: rgba(255,255,255,0.6)"
           @click="router.push('/login')"
         >
           登录
@@ -94,6 +107,7 @@ onMounted(async () => {
           type="primary"
           size="large"
           round
+          style="background: rgba(255,255,255,0.95); color: #18a058; border: none; font-weight: 600"
           @click="router.push('/dashboard')"
         >
           进入数据看板
@@ -102,6 +116,8 @@ onMounted(async () => {
           v-if="userStore.token"
           size="large"
           round
+          ghost
+          style="color: white; border-color: rgba(255,255,255,0.6)"
           @click="router.push('/plans')"
         >
           我的种植计划

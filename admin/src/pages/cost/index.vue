@@ -28,15 +28,14 @@
             <t-option v-for="p in planOptions" :key="p.id" :value="p.id" :label="p.planName" />
           </t-select>
         </t-form-item>
-        <t-form-item label="成本类型" name="costType">
-          <t-select v-model="formData.costType" placeholder="请选择类型">
-            <t-option label="种子" value="种子" />
-            <t-option label="化肥" value="化肥" />
-            <t-option label="农药" value="农药" />
-            <t-option label="人工" value="人工" />
-            <t-option label="机械" value="机械" />
-            <t-option label="灌溉" value="灌溉" />
-            <t-option label="其他" value="其他" />
+        <t-form-item label="成本类型" name="type">
+          <t-select v-model="formData.type" placeholder="请选择类型">
+            <t-option label="种子" :value="1" />
+            <t-option label="化肥" :value="2" />
+            <t-option label="农药" :value="3" />
+            <t-option label="人工" :value="4" />
+            <t-option label="设备" :value="5" />
+            <t-option label="其他" :value="6" />
           </t-select>
         </t-form-item>
         <t-form-item label="金额(元)" name="amount">
@@ -45,8 +44,8 @@
         <t-form-item label="费用日期" name="costDate">
           <t-date-picker v-model="formData.costDate" placeholder="请选择日期" style="width: 100%" />
         </t-form-item>
-        <t-form-item label="备注" name="remark">
-          <t-textarea v-model="formData.remark" placeholder="请输入备注" />
+        <t-form-item label="备注" name="description">
+          <t-textarea v-model="formData.description" placeholder="请输入备注" />
         </t-form-item>
       </t-form>
     </t-dialog>
@@ -71,15 +70,15 @@ const planOptions = ref<any[]>([]);
 const formData = reactive({
   id: undefined as number | undefined,
   planId: undefined as number | undefined,
-  costType: '',
+  type: undefined as number | undefined,
   amount: undefined as number | undefined,
   costDate: '',
-  remark: '',
+  description: '',
 });
 
 const formRules = {
   planId: [{ required: true, message: '请选择种植计划' }],
-  costType: [{ required: true, message: '请选择成本类型' }],
+  type: [{ required: true, message: '请选择成本类型' }],
   amount: [{ required: true, message: '请输入金额' }],
 };
 
@@ -123,10 +122,10 @@ function onPageChange(pageInfo: { current: number; pageSize: number }) {
 function resetForm() {
   formData.id = undefined;
   formData.planId = undefined;
-  formData.costType = '';
+  formData.type = undefined;
   formData.amount = undefined;
   formData.costDate = '';
-  formData.remark = '';
+  formData.description = '';
 }
 
 function handleAdd() {

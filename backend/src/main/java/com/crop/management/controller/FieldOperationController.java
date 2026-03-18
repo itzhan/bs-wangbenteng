@@ -4,7 +4,9 @@ import com.crop.management.common.PageResult;
 import com.crop.management.common.Result;
 import com.crop.management.entity.FieldOperation;
 import com.crop.management.service.FieldOperationService;
+import com.crop.management.security.LoginUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,11 +39,16 @@ public class FieldOperationController {
         return Result.success(fieldOperationService.getById(id));
     }
 
+    private LoginUser getCurrentUser() {
+        return (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     /**
      * 新增田间操作
      */
     @PostMapping
     public Result<Void> create(@RequestBody FieldOperation fieldOperation) {
+        fieldOperation.setUserId(getCurrentUser().getUserId());
         fieldOperationService.create(fieldOperation);
         return Result.success();
     }

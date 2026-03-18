@@ -30,4 +30,10 @@ public class PlantingPlan {
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+    @TableField(exist = false)
+    private String userName;
+    @TableField(exist = false)
+    private String cropName;
+    @TableField(exist = false)
+    private String plotName;
 }

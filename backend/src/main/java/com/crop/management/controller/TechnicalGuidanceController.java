@@ -3,8 +3,10 @@ package com.crop.management.controller;
 import com.crop.management.common.PageResult;
 import com.crop.management.common.Result;
 import com.crop.management.entity.TechnicalGuidance;
+import com.crop.management.security.LoginUser;
 import com.crop.management.service.TechnicalGuidanceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 public class TechnicalGuidanceController {
 
     private final TechnicalGuidanceService technicalGuidanceService;
+
+    private LoginUser getCurrentUser() {
+        return (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
 
     /**
      * 分页查询技术指导列表
@@ -39,6 +45,7 @@ public class TechnicalGuidanceController {
      */
     @PostMapping
     public Result<Void> create(@RequestBody TechnicalGuidance guidance) {
+        guidance.setAuthorId(getCurrentUser().getUserId());
         technicalGuidanceService.create(guidance);
         return Result.success();
     }

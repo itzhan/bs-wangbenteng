@@ -29,14 +29,14 @@
             <t-option v-for="p in planOptions" :key="p.id" :value="p.id" :label="p.planName" />
           </t-select>
         </t-form-item>
-        <t-form-item label="产量(kg)" name="yield">
-          <t-input-number v-model="formData.yield" :min="0" :decimal-places="2" placeholder="请输入产量" style="width: 100%" />
+        <t-form-item label="产量(kg)" name="quantity">
+          <t-input-number v-model="formData.quantity" :min="0" :decimal-places="2" placeholder="请输入产量" style="width: 100%" />
         </t-form-item>
         <t-form-item label="收获日期" name="harvestDate">
           <t-date-picker v-model="formData.harvestDate" placeholder="请选择日期" style="width: 100%" />
         </t-form-item>
-        <t-form-item label="备注" name="remark">
-          <t-textarea v-model="formData.remark" placeholder="请输入备注" />
+        <t-form-item label="备注" name="notes">
+          <t-textarea v-model="formData.notes" placeholder="请输入备注" />
         </t-form-item>
       </t-form>
     </t-dialog>
@@ -61,22 +61,22 @@ const planOptions = ref<any[]>([]);
 const formData = reactive({
   id: undefined as number | undefined,
   planId: undefined as number | undefined,
-  yield: undefined as number | undefined,
+  quantity: undefined as number | undefined,
   harvestDate: '',
-  remark: '',
+  notes: '',
 });
 
 const formRules = {
   planId: [{ required: true, message: '请选择种植计划' }],
-  yield: [{ required: true, message: '请输入产量' }],
+  quantity: [{ required: true, message: '请输入产量' }],
 };
 
 const columns = [
   { colKey: 'planName', title: '种植计划', width: 150, cell: 'planName' },
   { colKey: 'cropName', title: '作物', width: 120, cell: 'cropName' },
-  { colKey: 'yield', title: '产量(kg)', width: 120 },
+  { colKey: 'quantity', title: '产量(kg)', width: 120 },
   { colKey: 'harvestDate', title: '收获日期', width: 120 },
-  { colKey: 'remark', title: '备注', ellipsis: true },
+  { colKey: 'notes', title: '备注', ellipsis: true },
   { colKey: 'operation', title: '操作', width: 150, fixed: 'right' as const },
 ];
 
@@ -111,9 +111,9 @@ function onPageChange(pageInfo: { current: number; pageSize: number }) {
 function resetForm() {
   formData.id = undefined;
   formData.planId = undefined;
-  formData.yield = undefined;
+  formData.quantity = undefined;
   formData.harvestDate = '';
-  formData.remark = '';
+  formData.notes = '';
 }
 
 function handleAdd() {

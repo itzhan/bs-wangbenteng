@@ -23,4 +23,8 @@ public class YieldRecord {
     private LocalDateTime createTime;
     @TableField(fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
+    @TableField(exist = false)
+    private String planName;
+    @TableField(exist = false)
+    private String cropName;
 }

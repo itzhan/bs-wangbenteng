@@ -2,13 +2,13 @@
 import { ref, onMounted } from 'vue'
 import {
   NDataTable,
-  NCard,
   NPagination,
   NTag,
   NEmpty,
 } from 'naive-ui'
 import type { DataTableColumns } from 'naive-ui'
 import { getInventory } from '@/api/inventory'
+import request from '@/utils/request'
 
 const data = ref<any[]>([])
 const loading = ref(false)
@@ -16,15 +16,60 @@ const page = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
+const materialMap = ref<Record<number, any>>({})
+
 const columns: DataTableColumns<any> = [
-  { title: '物资名称', key: 'materialName' },
-  { title: '类别', key: 'category' },
-  { title: '规格', key: 'specification' },
-  { title: '单位', key: 'unit', width: 80 },
+  {
+    title: '物资名称',
+    key: 'materialId',
+    render: (row) => materialMap.value[row.materialId]?.name || `物资#${row.materialId}`,
+  },
+  {
+    title: '类别',
+    key: 'category',
+    render: (row) => materialMap.value[row.materialId]?.type || '-',
+  },
+  {
+    title: '规格',
+    key: 'specification',
+    render: (row) => materialMap.value[row.materialId]?.specification || '-',
+  },
+  {
+    title: '单位',
+    key: 'unit',
+    width: 80,
+    render: (row) => materialMap.value[row.materialId]?.unit || '-',
+  },
   { title: '库存数量', key: 'quantity', width: 100 },
-  { title: '仓库', key: 'warehouseName' },
+  {
+    title: '预警阈值',
+    key: 'warningThreshold',
+    width: 100,
+    render: (row) => row.warningThreshold ?? '-',
+  },
+  {
+    title: '状态',
+    key: 'status',
+    width: 80,
+    render: (row) => {
+      if (row.warningThreshold && row.quantity <= row.warningThreshold) {
+        return '库存不足'
+      }
+      return '正常'
+    },
+  },
   { title: '更新时间', key: 'updateTime', width: 160 },
 ]
+
+async function loadMaterials() {
+  try {
+    const res: any = await request.get('/materials', { params: { page: 1, size: 100 } })
+    const list = res.records || res || []
+    materialMap.value = Object.fromEntries(list.map((m: any) => [m.id, m]))
+  } catch {
+    // ignore
+  }
+}
 
 async function loadData() {
   loading.value = true
@@ -44,7 +89,8 @@ function handlePageChange(p: number) {
   loadData()
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await loadMaterials()
   loadData()
 })
 </script>

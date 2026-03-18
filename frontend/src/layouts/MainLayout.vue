@@ -48,11 +48,19 @@ const publicMenuOptions: MenuOption[] = [
 
 const authMenuOptions: MenuOption[] = [
   { label: '首页', key: '/', icon: renderIcon(HomeOutline) },
-  { label: '种植计划', key: '/plans', icon: renderIcon(CalendarOutline) },
-  { label: '农事操作', key: '/operations', icon: renderIcon(ConstructOutline) },
-  { label: '物资库存', key: '/inventory', icon: renderIcon(CubeOutline) },
-  { label: '产量记录', key: '/yields', icon: renderIcon(BarChartOutline) },
-  { label: '成本记录', key: '/costs', icon: renderIcon(CashOutline) },
+  { label: '作物品种', key: '/crops', icon: renderIcon(LeafOutline) },
+  {
+    label: '种植管理',
+    key: '/farm',
+    icon: renderIcon(CalendarOutline),
+    children: [
+      { label: '种植计划', key: '/plans' },
+      { label: '农事操作', key: '/operations' },
+      { label: '产量记录', key: '/yields' },
+      { label: '成本记录', key: '/costs' },
+      { label: '物资库存', key: '/inventory' },
+    ],
+  },
   { label: '数据看板', key: '/dashboard', icon: renderIcon(StatsChartOutline) },
   { label: '通知公告', key: '/announcements', icon: renderIcon(MegaphoneOutline) },
   { label: '技术指导', key: '/guidance', icon: renderIcon(BookOutline) },

@@ -10,7 +10,7 @@ export default [
     name: 'crop',
     meta: {
       title: { zh_CN: '作物管理', en_US: 'Crop Management' },
-      icon: 'flower',
+      icon: 'broccoli',
       orderNo: 10,
     },
     children: [

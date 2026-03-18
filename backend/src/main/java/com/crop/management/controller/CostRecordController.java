@@ -4,7 +4,9 @@ import com.crop.management.common.PageResult;
 import com.crop.management.common.Result;
 import com.crop.management.entity.CostRecord;
 import com.crop.management.service.CostRecordService;
+import com.crop.management.security.LoginUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,11 +39,16 @@ public class CostRecordController {
         return Result.success(costRecordService.getById(id));
     }
 
+    private LoginUser getCurrentUser() {
+        return (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     /**
      * 新增成本记录
      */
     @PostMapping
     public Result<Void> create(@RequestBody CostRecord costRecord) {
+        costRecord.setUserId(getCurrentUser().getUserId());
         costRecordService.create(costRecord);
         return Result.success();
     }

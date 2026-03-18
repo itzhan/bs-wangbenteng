@@ -18,4 +18,10 @@ public class InventoryRecord {
     private String reason;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime;
+    @TableField(exist = false)
+    private String materialName;
+    @TableField(exist = false)
+    private String operatorName;
+    @TableField(exist = false)
+    private String remark;
 }

@@ -4,7 +4,9 @@ import com.crop.management.common.PageResult;
 import com.crop.management.common.Result;
 import com.crop.management.entity.YieldRecord;
 import com.crop.management.service.YieldRecordService;
+import com.crop.management.security.LoginUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,11 +38,16 @@ public class YieldRecordController {
         return Result.success(yieldRecordService.getById(id));
     }
 
+    private LoginUser getCurrentUser() {
+        return (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     /**
      * 新增产量记录
      */
     @PostMapping
     public Result<Void> create(@RequestBody YieldRecord yieldRecord) {
+        yieldRecord.setUserId(getCurrentUser().getUserId());
         yieldRecordService.create(yieldRecord);
         return Result.success();
     }

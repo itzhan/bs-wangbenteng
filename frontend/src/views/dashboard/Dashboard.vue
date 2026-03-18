@@ -38,7 +38,7 @@ const colorPalette = ['#18a058', '#36ad6a', '#d4a259', '#e8b96a', '#5b8c6f', '#8
 
 // Yield trend line chart
 const yieldTrendOption = computed(() => {
-  const data = dashboardData.value?.yieldTrend || []
+  const data = dashboardData.value?.monthlyYieldTrend || dashboardData.value?.yieldTrend || []
   return {
     title: { text: '月度产量趋势', left: 'center', textStyle: { fontSize: 14, color: '#333' } },
     tooltip: { trigger: 'axis' },
@@ -72,7 +72,7 @@ const yieldTrendOption = computed(() => {
 
 // Cost breakdown pie chart
 const costPieOption = computed(() => {
-  const data = dashboardData.value?.costBreakdown || []
+  const data = dashboardData.value?.costTypeDistribution || dashboardData.value?.costBreakdown || []
   return {
     title: { text: '成本构成分析', left: 'center', textStyle: { fontSize: 14, color: '#333' } },
     tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
@@ -93,7 +93,7 @@ const costPieOption = computed(() => {
 
 // Operation type bar chart
 const operationBarOption = computed(() => {
-  const data = dashboardData.value?.operationDistribution || []
+  const data = dashboardData.value?.operationTypeDistribution || dashboardData.value?.operationDistribution || []
   return {
     title: { text: '农事操作分布', left: 'center', textStyle: { fontSize: 14, color: '#333' } },
     tooltip: { trigger: 'axis' },
@@ -157,7 +157,7 @@ onMounted(() => {
       <n-grid :x-gap="16" :y-gap="16" cols="2 m:4" responsive="screen" style="margin-bottom: 24px">
         <n-gi>
           <n-card style="border-radius: 12px">
-            <n-statistic label="种植计划" :value="dashboardData?.totalPlans || 0">
+            <n-statistic label="种植计划" :value="dashboardData?.planCount || dashboardData?.totalPlans || 0">
               <template #prefix>
                 <n-icon :size="20" color="#18a058"><CalendarOutline /></n-icon>
               </template>
@@ -167,7 +167,7 @@ onMounted(() => {
         </n-gi>
         <n-gi>
           <n-card style="border-radius: 12px">
-            <n-statistic label="种植品种" :value="dashboardData?.totalCrops || 0">
+            <n-statistic label="种植品种" :value="dashboardData?.cropCount || dashboardData?.totalCrops || 0">
               <template #prefix>
                 <n-icon :size="20" color="#36ad6a"><LeafOutline /></n-icon>
               </template>
@@ -202,7 +202,7 @@ onMounted(() => {
         <n-gi :span="2">
           <n-card style="border-radius: 12px">
             <v-chart
-              v-if="dashboardData?.yieldTrend?.length"
+              v-if="(dashboardData?.monthlyYieldTrend || dashboardData?.yieldTrend)?.length"
               :option="yieldTrendOption"
               autoresize
               style="height: 320px"
@@ -213,7 +213,7 @@ onMounted(() => {
         <n-gi>
           <n-card style="border-radius: 12px">
             <v-chart
-              v-if="dashboardData?.costBreakdown?.length"
+              v-if="(dashboardData?.costTypeDistribution || dashboardData?.costBreakdown)?.length"
               :option="costPieOption"
               autoresize
               style="height: 320px"
@@ -224,7 +224,7 @@ onMounted(() => {
         <n-gi>
           <n-card style="border-radius: 12px">
             <v-chart
-              v-if="dashboardData?.operationDistribution?.length"
+              v-if="(dashboardData?.operationTypeDistribution || dashboardData?.operationDistribution)?.length"
               :option="operationBarOption"
               autoresize
               style="height: 320px"

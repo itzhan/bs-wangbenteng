@@ -38,8 +38,8 @@
         <t-form-item label="数量" name="quantity">
           <t-input-number v-model="formData.quantity" :min="1" placeholder="请输入数量" style="width: 100%" />
         </t-form-item>
-        <t-form-item label="备注" name="remark">
-          <t-textarea v-model="formData.remark" placeholder="请输入备注" />
+        <t-form-item label="备注" name="reason">
+          <t-textarea v-model="formData.reason" placeholder="请输入备注" />
         </t-form-item>
       </t-form>
     </t-dialog>
@@ -64,7 +64,7 @@ const formData = reactive({
   materialId: undefined as number | undefined,
   type: undefined as number | undefined,
   quantity: undefined as number | undefined,
-  remark: '',
+  reason: '',
 });
 
 const formRules = {
@@ -114,7 +114,7 @@ function handleOperate() {
   formData.materialId = undefined;
   formData.type = undefined;
   formData.quantity = undefined;
-  formData.remark = '';
+  formData.reason = '';
   dialogVisible.value = true;
 }
 
@@ -126,7 +126,7 @@ async function handleSubmit() {
       materialId: formData.materialId!,
       type: formData.type!,
       quantity: formData.quantity!,
-      remark: formData.remark || undefined,
+      reason: formData.reason || undefined,
     });
     MessagePlugin.success('操作成功');
     dialogVisible.value = false;

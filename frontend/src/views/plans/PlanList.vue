@@ -44,6 +44,8 @@ const formData = ref<Record<string, any>>({
 
 const cropOptions = ref<any[]>([])
 const plotOptions = ref<any[]>([])
+const cropMap = ref<Record<number, string>>({})
+const plotMap = ref<Record<number, string>>({})
 let editId: number | null = null
 
 const statusMap: Record<string, { label: string; type: 'default' | 'info' | 'success' | 'warning' | 'error' }> = {
@@ -55,30 +57,40 @@ const statusMap: Record<string, { label: string; type: 'default' | 'info' | 'suc
   CANCELLED: { label: '已取消', type: 'error' },
 }
 
+const statusNumMap: Record<number, { label: string; type: 'default' | 'info' | 'success' | 'warning' | 'error' }> = {
+  0: { label: '待审核', type: 'info' },
+  1: { label: '已通过', type: 'success' },
+  2: { label: '已驳回', type: 'error' },
+  3: { label: '进行中', type: 'warning' },
+  4: { label: '已完成', type: 'success' },
+}
+
 const columns: DataTableColumns<any> = [
   { title: '计划名称', key: 'planName', ellipsis: { tooltip: true } },
-  { title: '作物', key: 'cropName' },
-  { title: '地块', key: 'plotName' },
+  {
+    title: '作物',
+    key: 'cropId',
+    render: (row) => cropMap.value[row.cropId] || '-',
+  },
+  {
+    title: '地块',
+    key: 'plotId',
+    render: (row) => plotMap.value[row.plotId] || '-',
+  },
   {
     title: '面积(亩)',
-    key: 'plantingArea',
+    key: 'plannedArea',
     width: 90,
-    render: (row) => row.plantingArea ?? '-',
+    render: (row) => row.plannedArea ?? row.plantingArea ?? '-',
   },
-  {
-    title: '预期产量(kg)',
-    key: 'expectedYield',
-    width: 110,
-    render: (row) => row.expectedYield ?? '-',
-  },
-  { title: '开始日期', key: 'startDate', width: 110 },
-  { title: '结束日期', key: 'endDate', width: 110 },
+  { title: '开始日期', key: 'plannedStartDate', width: 110, render: (row) => row.plannedStartDate || row.startDate || '-' },
+  { title: '结束日期', key: 'plannedEndDate', width: 110, render: (row) => row.plannedEndDate || row.endDate || '-' },
   {
     title: '状态',
     key: 'status',
     width: 90,
     render: (row) => {
-      const s = statusMap[row.status] || { label: row.status, type: 'default' as const }
+      const s = statusMap[row.status] || statusNumMap[row.status] || { label: String(row.status), type: 'default' as const }
       return h(NTag, { type: s.type, size: 'small', round: true }, { default: () => s.label })
     },
   },
@@ -122,14 +134,13 @@ async function loadOptions() {
       getCrops(1, 100),
       getMyPlots(),
     ])
-    cropOptions.value = (cropsData.records || cropsData || []).map((c: any) => ({
-      label: c.name,
-      value: c.id,
-    }))
-    plotOptions.value = (plotsData || []).map((p: any) => ({
-      label: p.name || p.plotName,
-      value: p.id,
-    }))
+    const cropList = cropsData.records || cropsData || []
+    cropOptions.value = cropList.map((c: any) => ({ label: c.name, value: c.id }))
+    cropMap.value = Object.fromEntries(cropList.map((c: any) => [c.id, c.name]))
+
+    const plotList = plotsData || []
+    plotOptions.value = plotList.map((p: any) => ({ label: p.name || p.plotName, value: p.id }))
+    plotMap.value = Object.fromEntries(plotList.map((p: any) => [p.id, p.name || p.plotName]))
   } catch {
     // ignore
   }
@@ -154,14 +165,16 @@ function handleAdd() {
 function handleEdit(row: any) {
   isEdit.value = true
   editId = row.id
+  const sd = row.plannedStartDate || row.startDate
+  const ed = row.plannedEndDate || row.endDate
   formData.value = {
     cropId: row.cropId,
     plotId: row.plotId,
     planName: row.planName,
-    plantingArea: row.plantingArea,
+    plantingArea: row.plannedArea || row.plantingArea,
     expectedYield: row.expectedYield,
-    startDate: row.startDate ? new Date(row.startDate).getTime() : null,
-    endDate: row.endDate ? new Date(row.endDate).getTime() : null,
+    startDate: sd ? new Date(sd).getTime() : null,
+    endDate: ed ? new Date(ed).getTime() : null,
     description: row.description || '',
   }
   showModal.value = true
@@ -177,9 +190,14 @@ async function handleSubmit() {
   formLoading.value = true
   try {
     const payload = {
-      ...formData.value,
-      startDate: formData.value.startDate ? new Date(formData.value.startDate).toISOString().split('T')[0] : null,
-      endDate: formData.value.endDate ? new Date(formData.value.endDate).toISOString().split('T')[0] : null,
+      cropId: formData.value.cropId,
+      plotId: formData.value.plotId,
+      planName: formData.value.planName,
+      plannedArea: formData.value.plantingArea,
+      expectedYield: formData.value.expectedYield,
+      description: formData.value.description,
+      plannedStartDate: formData.value.startDate ? new Date(formData.value.startDate).toISOString().split('T')[0] : null,
+      plannedEndDate: formData.value.endDate ? new Date(formData.value.endDate).toISOString().split('T')[0] : null,
     }
     if (isEdit.value && editId) {
       await updatePlan(editId, payload)

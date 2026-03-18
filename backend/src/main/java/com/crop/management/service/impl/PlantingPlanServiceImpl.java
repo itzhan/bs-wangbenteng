@@ -4,9 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.crop.management.common.PageResult;
 import com.crop.management.dto.PlanReviewDTO;
+import com.crop.management.entity.Crop;
 import com.crop.management.entity.PlantingPlan;
+import com.crop.management.entity.Plot;
+import com.crop.management.entity.User;
 import com.crop.management.exception.BusinessException;
+import com.crop.management.mapper.CropMapper;
 import com.crop.management.mapper.PlantingPlanMapper;
+import com.crop.management.mapper.PlotMapper;
+import com.crop.management.mapper.UserMapper;
 import com.crop.management.service.PlantingPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,12 +20,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PlantingPlanServiceImpl implements PlantingPlanService {
 
     private final PlantingPlanMapper plantingPlanMapper;
+    private final UserMapper userMapper;
+    private final CropMapper cropMapper;
+    private final PlotMapper plotMapper;
 
     @Override
     public PageResult<PlantingPlan> list(Integer page, Integer size, Long userId, Long cropId, Integer status) {
@@ -30,6 +43,7 @@ public class PlantingPlanServiceImpl implements PlantingPlanService {
         wrapper.eq(status != null, PlantingPlan::getStatus, status);
         wrapper.orderByDesc(PlantingPlan::getCreateTime);
         Page<PlantingPlan> result = plantingPlanMapper.selectPage(pageParam, wrapper);
+        fillDisplayFields(result.getRecords());
         return PageResult.of(result.getRecords(), result.getTotal(), page, size);
     }
 
@@ -119,6 +133,34 @@ public class PlantingPlanServiceImpl implements PlantingPlanService {
         LambdaQueryWrapper<PlantingPlan> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(PlantingPlan::getUserId, userId);
         wrapper.orderByDesc(PlantingPlan::getCreateTime);
-        return plantingPlanMapper.selectList(wrapper);
+        List<PlantingPlan> plans = plantingPlanMapper.selectList(wrapper);
+        fillDisplayFields(plans);
+        return plans;
+    }
+
+    private void fillDisplayFields(List<PlantingPlan> plans) {
+        if (plans == null || plans.isEmpty()) {
+            return;
+        }
+
+        Map<Long, String> userNameMap = userMapper.selectBatchIds(extractIds(plans.stream().map(PlantingPlan::getUserId).toList()))
+                .stream()
+                .collect(Collectors.toMap(User::getId, user -> user.getRealName() != null ? user.getRealName() : user.getUsername()));
+        Map<Long, String> cropNameMap = cropMapper.selectBatchIds(extractIds(plans.stream().map(PlantingPlan::getCropId).toList()))
+                .stream()
+                .collect(Collectors.toMap(Crop::getId, Crop::getName));
+        Map<Long, String> plotNameMap = plotMapper.selectBatchIds(extractIds(plans.stream().map(PlantingPlan::getPlotId).toList()))
+                .stream()
+                .collect(Collectors.toMap(Plot::getId, Plot::getName));
+
+        plans.forEach(plan -> {
+            plan.setUserName(userNameMap.get(plan.getUserId()));
+            plan.setCropName(cropNameMap.get(plan.getCropId()));
+            plan.setPlotName(plotNameMap.get(plan.getPlotId()));
+        });
+    }
+
+    private Set<Long> extractIds(List<Long> ids) {
+        return ids.stream().filter(Objects::nonNull).collect(Collectors.toSet());
     }
 }

@@ -38,15 +38,18 @@ let editId: number | null = null
 
 const planOptions = ref<any[]>([])
 
+const operationTypeMap: Record<string, string> = {
+  '1': '灌溉', '2': '施肥', '3': '打药', '4': '除草', '5': '收获', '6': '其他',
+  '播种': '播种', '施肥': '施肥', '灌溉': '灌溉', '除草': '除草',
+  '病虫害防治': '病虫害防治', '修剪': '修剪', '收获': '收获', '其他': '其他',
+}
 const operationTypeOptions = [
-  { label: '播种', value: '播种' },
-  { label: '施肥', value: '施肥' },
-  { label: '灌溉', value: '灌溉' },
-  { label: '除草', value: '除草' },
-  { label: '病虫害防治', value: '病虫害防治' },
-  { label: '修剪', value: '修剪' },
-  { label: '收获', value: '收获' },
-  { label: '其他', value: '其他' },
+  { label: '灌溉', value: 1 },
+  { label: '施肥', value: 2 },
+  { label: '打药', value: 3 },
+  { label: '除草', value: 4 },
+  { label: '收获', value: 5 },
+  { label: '其他', value: 6 },
 ]
 
 const typeColorMap: Record<string, string> = {
@@ -59,17 +62,26 @@ const typeColorMap: Record<string, string> = {
   '收获': 'success',
 }
 
+const planMap = ref<Record<number, string>>({})
+
 const columns: DataTableColumns<any> = [
-  { title: '所属计划', key: 'planName', ellipsis: { tooltip: true } },
+  {
+    title: '所属计划',
+    key: 'planId',
+    ellipsis: { tooltip: true },
+    render: (row) => planMap.value[row.planId] || `计划#${row.planId}`,
+  },
   {
     title: '操作类型',
     key: 'operationType',
     width: 120,
-    render: (row) => h(NTag, { type: (typeColorMap[row.operationType] || 'default') as any, size: 'small', round: true }, { default: () => row.operationType }),
+    render: (row) => {
+      const label = operationTypeMap[String(row.operationType)] || String(row.operationType)
+      return h(NTag, { type: (typeColorMap[label] || 'default') as any, size: 'small', round: true }, { default: () => label })
+    },
   },
   { title: '操作日期', key: 'operationDate', width: 110 },
   { title: '描述', key: 'description', ellipsis: { tooltip: true } },
-  { title: '备注', key: 'remark', ellipsis: { tooltip: true } },
   {
     title: '操作',
     key: 'actions',
@@ -100,12 +112,9 @@ async function loadData() {
 async function loadPlanOptions() {
   try {
     const res: any = await getMyPlans(1, 100)
-    // Backend /plans/my returns a plain array (not paginated)
     const list = Array.isArray(res) ? res : (res.records || [])
-    planOptions.value = list.map((p: any) => ({
-      label: p.planName,
-      value: p.id,
-    }))
+    planOptions.value = list.map((p: any) => ({ label: p.planName, value: p.id }))
+    planMap.value = Object.fromEntries(list.map((p: any) => [p.id, p.planName]))
   } catch {
     // ignore
   }
@@ -126,7 +135,7 @@ function handleEdit(row: any) {
     operationType: row.operationType,
     operationDate: row.operationDate ? new Date(row.operationDate).getTime() : null,
     description: row.description || '',
-    remark: row.remark || '',
+    remark: '',
   }
   showModal.value = true
 }

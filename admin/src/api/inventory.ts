@@ -11,7 +11,7 @@ export function getWarnings() {
 }
 
 /** 库存操作（入库/出库） */
-export function operate(data: { materialId: number; type: number; quantity: number; remark?: string }) {
+export function operate(data: { materialId: number; type: number; quantity: number; reason?: string }) {
   return request.request({ url: '/inventory/operate', method: 'post', data });
 }
 

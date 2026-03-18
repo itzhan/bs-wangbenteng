@@ -3,8 +3,10 @@ package com.crop.management.controller;
 import com.crop.management.common.PageResult;
 import com.crop.management.common.Result;
 import com.crop.management.entity.Announcement;
+import com.crop.management.security.LoginUser;
 import com.crop.management.service.AnnouncementService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,6 +15,10 @@ import org.springframework.web.bind.annotation.*;
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
+
+    private LoginUser getCurrentUser() {
+        return (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
 
     /**
      * 分页查询公告列表
@@ -39,6 +45,7 @@ public class AnnouncementController {
      */
     @PostMapping
     public Result<Void> create(@RequestBody Announcement announcement) {
+        announcement.setPublisherId(getCurrentUser().getUserId());
         announcementService.create(announcement);
         return Result.success();
     }

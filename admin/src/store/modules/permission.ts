@@ -1,34 +1,21 @@
 import cloneDeep from 'lodash/cloneDeep';
 import { defineStore } from 'pinia';
-import type { RouteRecordRaw } from 'vue-router';
 
-import router, { fixedRouterList, homepageRouterList } from '@/router';
+import { fixedRouterList, homepageRouterList } from '@/router';
 import { store } from '@/store';
 
 export const usePermissionStore = defineStore('permission', {
   state: () => ({
     whiteListRouters: ['/login'],
-    routers: [] as RouteRecordRaw[],
-    removeRoutes: [] as RouteRecordRaw[],
-    asyncRoutes: [] as RouteRecordRaw[],
+    routers: [],
   }),
   actions: {
     async initRoutes() {
-      // 在菜单展示全部路由
-      this.routers = cloneDeep([...homepageRouterList, ...this.asyncRoutes, ...fixedRouterList]);
-    },
-    async buildAsyncRoutes() {
-      // 当前使用静态路由，无需从后端获取菜单
-      await this.initRoutes();
-      return this.asyncRoutes;
+      // 当前项目使用静态路由，这里只负责初始化菜单数据
+      this.routers = cloneDeep([...homepageRouterList, ...fixedRouterList]);
     },
     async restoreRoutes() {
-      this.asyncRoutes.forEach((item: RouteRecordRaw) => {
-        if (item.name) {
-          router.removeRoute(item.name);
-        }
-      });
-      this.asyncRoutes = [];
+      this.routers = [];
     },
   },
 });

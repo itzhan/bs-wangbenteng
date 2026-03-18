@@ -44,12 +44,19 @@ const qualityOptions = [
   { label: '差', value: '差' },
 ]
 
+const planMap = ref<Record<number, string>>({})
+
 const columns: DataTableColumns<any> = [
-  { title: '所属计划', key: 'planName', ellipsis: { tooltip: true } },
+  {
+    title: '所属计划',
+    key: 'planId',
+    ellipsis: { tooltip: true },
+    render: (row) => planMap.value[row.planId] || `计划#${row.planId}`,
+  },
   { title: '收获日期', key: 'harvestDate', width: 110 },
-  { title: '产量(kg)', key: 'actualYield', width: 100 },
-  { title: '质量等级', key: 'qualityLevel', width: 90 },
-  { title: '备注', key: 'remark', ellipsis: { tooltip: true } },
+  { title: '产量(kg)', key: 'quantity', width: 100, render: (row) => row.quantity ?? row.actualYield ?? '-' },
+  { title: '质量等级', key: 'quality', width: 90, render: (row) => row.quality || row.qualityLevel || '-' },
+  { title: '备注', key: 'notes', ellipsis: { tooltip: true }, render: (row) => row.notes || row.remark || '-' },
   {
     title: '操作',
     key: 'actions',
@@ -80,12 +87,9 @@ async function loadData() {
 async function loadPlanOptions() {
   try {
     const res: any = await getMyPlans(1, 100)
-    // Backend /plans/my returns a plain array (not paginated)
     const list = Array.isArray(res) ? res : (res.records || [])
-    planOptions.value = list.map((p: any) => ({
-      label: p.planName,
-      value: p.id,
-    }))
+    planOptions.value = list.map((p: any) => ({ label: p.planName, value: p.id }))
+    planMap.value = Object.fromEntries(list.map((p: any) => [p.id, p.planName]))
   } catch {
     // ignore
   }
@@ -104,9 +108,9 @@ function handleEdit(row: any) {
   formData.value = {
     planId: row.planId,
     harvestDate: row.harvestDate ? new Date(row.harvestDate).getTime() : null,
-    actualYield: row.actualYield,
-    qualityLevel: row.qualityLevel || '',
-    remark: row.remark || '',
+    actualYield: row.quantity ?? row.actualYield,
+    qualityLevel: row.quality || row.qualityLevel || '',
+    remark: row.notes || row.remark || '',
   }
   showModal.value = true
 }
@@ -120,7 +124,10 @@ async function handleSubmit() {
   formLoading.value = true
   try {
     const payload = {
-      ...formData.value,
+      planId: formData.value.planId,
+      quantity: formData.value.actualYield,
+      quality: formData.value.qualityLevel,
+      notes: formData.value.remark,
       harvestDate: formData.value.harvestDate ? new Date(formData.value.harvestDate).toISOString().split('T')[0] : null,
     }
     if (isEdit.value && editId) {
